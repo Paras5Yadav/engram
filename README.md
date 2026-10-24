@@ -1,38 +1,69 @@
 # Engram
 
-Persistent agent memory that runs on the user's computer. The base engine uses
-Python 3.11+ and the standard library. Optional adapters add TypeSafe decisions,
-OpenAI-compatible models, local Laya decisions, or local semantic embeddings.
-No Engram server or hosted database is required.
+**Persistent memory for TypeSafe Jev-powered agents.**
+
+Engram is a memory layer for coding agents and applications that use TypeSafe
+Jev. It preserves observations across sessions, connects related facts, and
+retrieves evidence when an agent needs to recall a preference, decision, or
+past event.
+
+In TypeSafe mode, **Jev makes the memory-management decisions**: what to retain,
+how observations relate, where to search, and when the retrieved evidence is
+sufficient. **Engram supplies the memory system**: durable storage, memory
+connections, retrieval, and a context block for the agent's next response.
+Your agent or a separately configured answer model writes the final answer.
+
+Engram runs on the user's computer and stores memories in a local SQLite
+database. Users bring their own TypeSafe API key; decision requests are sent to
+the TypeSafe API. No Engram-hosted server or database is required.
 
 Version 0.2 adds a transactional SQLite engine and a distributable local skill.
 This is an engineering foundation. Quality and performance still require
 evaluation with the selected models, data, and budgets.
 
-## Run locally
+## Get started with TypeSafe Jev
 
-```bash
-python -m engram demo
-python -m engram remember --persist ./engram_store --scope project-a \
-  --text "The project API timeout is 30 seconds." --timestamp 2026-10-24 --json
-python -m engram query --persist ./engram_store --scope project-a \
-  --question "What is the API timeout?" --json
-```
-
-`query` returns evidence, a bounded `context` block, and a decision trace. It
-never generates an answer or starts a server. The agent using the skill can
-answer from that evidence with its existing model. `ask` optionally calls a
-separate answer model; `--offline` forces heuristic decisions and template
-answers even when provider keys exist in the environment.
-
-To install the CLI in a virtual environment:
+Requires Python 3.11+. From a checkout of this repository:
 
 ```bash
 python -m venv .venv
 # Activate .venv using your platform's activation command.
-python -m pip install .
-engram demo
+python -m pip install '.[typesafe]'
+export TYPESAFE_API_KEY="your-typesafe-api-key"
+
+python -m engram remember --backend typesafe \
+  --persist ./engram_store --scope project-a \
+  --text "The project API timeout is 30 seconds." --timestamp 2026-10-24 --json
+python -m engram query --backend typesafe \
+  --persist ./engram_store --scope project-a \
+  --question "What is the API timeout?" --json
 ```
+
+Use `--backend typesafe` for both ingestion and retrieval, or set
+`"decision_backend": "typesafe"` in the configuration passed with `--config`.
+The native controller uses `jev-latest` unless `control_model` overrides it.
+In PowerShell, set the key with `$env:TYPESAFE_API_KEY = "your-typesafe-api-key"`.
+
+`query` returns evidence, a bounded `context` block, and a decision trace. It
+never generates an answer or starts a server. The agent using the skill can
+answer from that evidence with its existing model. `ask` optionally calls a
+separate answer model.
+
+## Try the offline demo
+
+The base runtime uses the Python standard library. This demo requires no API key
+or model download:
+
+```bash
+python -m engram demo
+```
+
+The unconfigured CLI currently defaults to offline heuristics; the Jev examples
+above explicitly select TypeSafe. `--offline` forces heuristic decisions and
+template answers even when provider keys exist in the environment. Heuristics
+also provide a visible fallback when the selected decision provider is
+unavailable. Local Laya and OpenAI-compatible controllers are alternative
+integrations.
 
 ## Local skill distribution
 
@@ -111,14 +142,7 @@ unknown settings, nonfinite probabilities, and invalid choice values fail
 validation. Provider errors use a visible heuristic fallback, reported in
 `runtime` or the query trace. Retries and controller calls are capped.
 
-TypeSafe uses its native decision SDK:
-
-```bash
-python -m pip install '.[typesafe]'
-# Set TYPESAFE_API_KEY in the process environment.
-python -m engram query --backend typesafe --persist ./engram_store \
-  --question "What is the API timeout?" --json
-```
+The TypeSafe/Jev workflow above uses the native TypeSafe decision SDK.
 
 `--backend llm` uses a chat endpoint that supports the OpenAI-compatible API.
 Set `ENGRAM_API_KEY` and optionally `ENGRAM_LLM_BASE_URL`; loopback endpoints can
