@@ -1,0 +1,17 @@
+{
+  "observations": [
+    {"label":"doctor","text":"Sam's doctor said he needs regular cardio for his heart health.","timestamp":1},
+    {"label":"riverside","text":"Sam started climbing at Riverside gym because his doctor said he needed cardio.","timestamp":2},
+    {"label":"harbor","text":"Sam now climbs at Harbor gym; he no longer climbs at Riverside.","timestamp":3},
+    {"label":"borrowed","text":"Dev borrowed Noor's tripod before the Lisbon trip.","timestamp":4},
+    {"label":"trip","text":"Noor and Sam are planning a Lisbon trip in June for a wedding.","timestamp":5},
+    {"label":"allergy","text":"Noor is allergic to peanuts.","timestamp":6}
+  ],
+  "queries": [
+    {"question":"Why did Sam start climbing?","expected":["doctor","riverside"]},
+    {"question":"Which gym does Sam climb at now?","expected":["harbor"]},
+    {"question":"Who borrowed Noor's tripod and when is the Lisbon trip?","expected":["borrowed","trip"]},
+    {"question":"What is Noor allergic to?","expected":["allergy"]},
+    {"question":"What is the production database password?","expected":[],"no_match":true}
+  ]
+}
